@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>75 HARD — Nathy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --card: #16161f;
+    --border: #22222e;
+    --accent: #c4899a;
+    --accent2: #7b5ea7;
+    --text: #f0f0f5;
+    --muted: #666680;
+    --danger: #ff4f4f;
+    --success: #c4899a;
+    --warn: #f5a623;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* HEADER */
+  header {
+    padding: 32px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .brand-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .brand-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .brand-title span {
+    color: var(--accent);
+  }
+
+  .day-badge {
+    background: var(--accent);
+    color: #0a0a0f;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  /* NAV TABS */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    gap: 0;
+  }
+
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    letter-spacing: 0.5px;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* PANELS */
+  .panel { display: none; padding: 28px; }
+  .panel.active { display: block; }
+
+  /* ——— TODAY PANEL ——— */
+  .today-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .today-date {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .streak-bar {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .streak-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .streak-dot.done { background: var(--accent); }
+
+  /* TASK CARDS */
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 520px) {
+    .tasks-grid { grid-template-columns: 1fr; }
+  }
+
+  .task-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: background 0.15s;
+  }
+
+  .task-card.done::before { background: var(--accent); }
+  .task-card.done { border-color: rgba(196,137,154,0.2); background: rgba(196,137,154,0.04); }
+
+  .task-card:hover { border-color: var(--muted); transform: translateY(-1px); }
+
+  .task-icon { font-size: 22px; margin-bottom: 10px; }
+
+  .task-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .task-sub {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .task-check {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    font-size: 11px;
+  }
+
+  .task-card.done .task-check {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0a0f;
+    font-weight: 700;
+  }
+
+  /* WATER TRACKER */
+  .water-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .water-cups {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .cup {
+    width: 36px; height: 42px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 4px;
+    font-size: 14px;
+    transition: all 0.15s;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cup .fill {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(123,94,167,0.35);
+    transition: height 0.2s;
+    height: 0%;
+  }
+
+  .cup.filled .fill { height: 100%; }
+  .cup.filled { border-color: var(--accent2); }
+
+  .cup-emoji {
+    position: relative;
+    z-index: 1;
+    font-size: 13px;
+  }
+
+  .water-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* PHOTO + PROGRESS */
+  .bottom-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 520px) {
+    .bottom-cards { grid-template-columns: 1fr; }
+  }
+
+  .mini-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .mini-card:hover { border-color: var(--muted); }
+  .mini-card.done { border-color: rgba(196,137,154,0.2); }
+
+  /* SAVE BUTTON */
+  .save-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--accent);
+    color: #0a0a0f;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: opacity 0.15s;
+  }
+
+  .save-btn:hover { opacity: 0.9; }
+
+  /* ——— CALENDAR PANEL ——— */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+
+  .cal-header {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    padding: 6px 0;
+    letter-spacing: 1px;
+  }
+
+  .cal-day {
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    background: var(--card);
+  }
+
+  .cal-day:hover { border-color: var(--muted); }
+
+  .cal-day.today {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .cal-day.completed { background: rgba(196,137,154,0.08); border-color: rgba(196,137,154,0.3); }
+  .cal-day.partial { background: rgba(245,166,35,0.08); border-color: rgba(245,166,35,0.3); }
+  .cal-day.failed { background: rgba(255,79,79,0.06); border-color: rgba(255,79,79,0.2); }
+  .cal-day.future { opacity: 0.35; cursor: default; }
+
+  .cal-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1;
+  }
+
+  .cal-day.today .cal-num { color: var(--accent); font-weight: 700; }
+  .cal-day.completed .cal-num { color: var(--text); }
+
+  .cal-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .cal-partial-dot { background: var(--warn); }
+
+  /* Progress stats */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ——— RULES PANEL ——— */
+  .rules-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .rule-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .rule-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 32px;
+    line-height: 1.1;
+  }
+
+  .rule-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .rule-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .rule-pill {
+    display: inline-block;
+    background: rgba(196,137,154,0.12);
+    color: var(--accent);
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  .rule-pill.hard {
+    background: rgba(255,79,79,0.12);
+    color: var(--danger);
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    margin-bottom: 28px;
+  }
+
+  .progress-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* RESET NOTE */
+  .reset-note {
+    background: rgba(255,79,79,0.07);
+    border: 1px solid rgba(255,79,79,0.2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: var(--danger);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .reset-note strong { font-weight: 700; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--accent);
+    color: #0a0a0f;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 12px 24px;
+    border-radius: 40px;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="brand-tag">Nathy · 2026</span>
+    <h1 class="brand-title">75 <span>HARD</span></h1>
+  </div>
+  <div class="day-badge" id="dayBadge">DIA 1/75</div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('today')">Hoje</button>
+  <button class="tab" onclick="switchTab('calendar')">Calendário</button>
+  <button class="tab" onclick="switchTab('rules')">Regras</button>
+</div>
+
+<!-- TODAY -->
+<div class="panel active" id="panel-today">
+  <div class="today-header">
+    <div>
+      <div style="font-size:14px;font-weight:600;" id="todayLabel">Segunda, 30 Jun</div>
+      <div class="today-date" id="todayDateFull"></div>
+    </div>
+    <div class="streak-bar" id="streakDots"></div>
+  </div>
+
+  <div class="tasks-grid">
+    <div class="task-card" id="t-treino1" onclick="toggleTask('treino1')">
+      <div class="task-check" id="check-treino1">✓</div>
+      <div class="task-icon">💪</div>
+      <div class="task-name">Treino 1</div>
+      <div class="task-sub">45 MIN · QUALQUER</div>
+    </div>
+    <div class="task-card" id="t-treino2" onclick="toggleTask('treino2')">
+      <div class="task-check" id="check-treino2">✓</div>
+      <div class="task-icon">🏃‍♀️</div>
+      <div class="task-name">Treino 2</div>
+      <div class="task-sub">45 MIN · MODALIDADE DIFERENTE</div>
+    </div>
+    <div class="task-card" id="t-dieta" onclick="toggleTask('dieta')">
+      <div class="task-check" id="check-dieta">✓</div>
+      <div class="task-icon">🥗</div>
+      <div class="task-name">Dieta</div>
+      <div class="task-sub">SEM ÁLCOOL · SEM CHEAT</div>
+    </div>
+    <div class="task-card" id="t-leitura" onclick="toggleTask('leitura')">
+      <div class="task-check" id="check-leitura">✓</div>
+      <div class="task-icon">📖</div>
+      <div class="task-name">Leitura</div>
+      <div class="task-sub">10 PÁG · NON-FICTION</div>
+    </div>
+  </div>
+
+  <div class="water-section">
+    <div class="section-label">💧 Água — 3,5 litros / dia</div>
+    <div class="water-cups" id="waterCups"></div>
+    <div class="water-label" id="waterLabel">0 / 14 copos (250ml)</div>
+  </div>
+
+  <div class="bottom-cards">
+    <div class="mini-card" id="t-foto" onclick="toggleTask('foto')">
+      <div class="task-check" id="check-foto" style="position:static;display:inline-flex;margin-bottom:10px;">✓</div>
+      <div style="font-size:20px;margin-bottom:8px;">📸</div>
+      <div class="task-name">Foto de progresso</div>
+      <div class="task-sub" style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:4px;">1 POR DIA</div>
+    </div>
+    <div class="mini-card" style="cursor:default;">
+      <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);margin-bottom:10px;">CONCLUSÃO DO DIA</div>
+      <div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;color:var(--accent);" id="completionPct">0%</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;" id="completionTxt">0 de 5 tarefas</div>
+      <div style="margin-top:10px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+        <div id="completionBar" style="height:100%;background:var(--accent);width:0%;border-radius:2px;transition:width 0.3s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveDay()">✓ SALVAR DIA</button>
+</div>
+
+<!-- CALENDAR -->
+<div class="panel" id="panel-calendar">
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="stat-days">0</div>
+      <div class="stat-lbl">Dias feitos</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-remain">75</div>
+      <div class="stat-lbl">Restantes</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-streak">0</div>
+      <div class="stat-lbl">Sequência</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="stat-pct">0%</div>
+      <div class="stat-lbl">Conclusão</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:2px;">PROGRESSO GERAL</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="overallBar" style="width:0%"></div>
+    </div>
+    <div class="progress-labels">
+      <span>30 Jun</span>
+      <span id="endDateLabel">12 Set</span>
+    </div>
+  </div>
+
+  <div class="calendar-grid" id="calendarGrid"></div>
+</div>
+
+<!-- RULES -->
+<div class="panel" id="panel-rules">
+  <div class="reset-note">
+    <strong>⚠️ Regra de ouro:</strong> Se falhar em qualquer tarefa, o desafio reinicia do Dia 1. Sem exceções, sem negociações.
+  </div>
+
+  <div class="rules-list">
+    <div class="rule-card">
+      <div class="rule-num">01</div>
+      <div>
+        <div class="rule-title">Dois treinos por dia</div>
+        <div class="rule-desc">45 minutos cada. Os dois treinos precisam ser de modalidades diferentes — por exemplo, musculação + cardio, ou spinning + pilates. Não vale fazer o mesmo tipo de treino duas vezes no dia.</div>
+        <span class="rule-pill">MODALIDADES DIFERENTES</span>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">02</div>
+      <div>
+        <div class="rule-title">Dieta seguida 100%</div>
+        <div class="rule-desc">Escolha uma dieta e siga sem desvios. Nenhum alimento fora do plano, nenhuma bebida alcoólica. Um erro = reinicia tudo.</div>
+        <span class="rule-pill">SUA DIETA ATUAL ~1500KCAL</span>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">03</div>
+      <div>
+        <div class="rule-title">3,5 litros de água</div>
+        <div class="rule-desc">Diariamente. Não conta chá, café, suco ou qualquer outra bebida. Apenas água pura. Mínimo de 3,5L.</div>
+        <span class="rule-pill">≈ 14 COPOS DE 250ML</span>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">04</div>
+      <div>
+        <div class="rule-title">Ler 10 páginas</div>
+        <div class="rule-desc">Todo dia. Livro físico ou digital de não-ficção. Audiobooks não contam. Pode ser de desenvolvimento pessoal, técnico, biográfico ou qualquer assunto que agregue.</div>
+        <span class="rule-pill">NÃO-FICÇÃO APENAS</span>
+      </div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-num">05</div>
+      <div>
+        <div class="rule-title">Foto de progresso</div>
+        <div class="rule-desc">Uma foto por dia, no mesmo ângulo. Não precisa postar — é apenas um registro visual da transformação ao longo dos 75 dias.</div>
+        <span class="rule-pill">REGISTRO DIÁRIO</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const START_DATE = new Date('2026-06-29T03:00:00'); // segunda 30 jun (UTC-3 = dia 29 UTC)
+const START_LOCAL = new Date(2026, 5, 30); // 30 jun 2026
+
+function getLocalToday() {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+}
+
+function dayIndex(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diff = d - START_LOCAL;
+  return Math.floor(diff / 86400000);
+}
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('75hard_v2') || '{}'); } catch { return {}; }
+}
+
+function saveData(data) {
+  localStorage.setItem('75hard_v2', JSON.stringify(data));
+}
+
+// ——— STATE ———
+let data = loadData();
+let today = getLocalToday();
+let todayIdx = dayIndex(today);
+let todayKey = todayIdx.toString();
+
+// Clamp to valid range
+if (todayIdx < 0) todayIdx = 0;
+if (todayIdx > 74) todayIdx = 74;
+
+// Init today's entry
+if (!data[todayKey]) data[todayKey] = { treino1:false, treino2:false, dieta:false, leitura:false, foto:false, water:0 };
+
+// ——— UI HELPERS ———
+const WEEKDAYS = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function formatDate(d) {
+  return `${WEEKDAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'calendar') renderCalendar();
+}
+
+// ——— TODAY PANEL ———
+function renderToday() {
+  const d = data[todayKey] || {};
+  
+  // Header
+  const displayIdx = Math.max(0, todayIdx) + 1;
+  document.getElementById('dayBadge').textContent = `DIA ${Math.min(displayIdx,75)}/75`;
+  document.getElementById('todayLabel').textContent = formatDate(today);
+  document.getElementById('todayDateFull').textContent = `Início: 30 Jun 2026`;
+
+  // Streak dots (last 7 days)
+  const dots = document.getElementById('streakDots');
+  dots.innerHTML = '';
+  for (let i = 6; i >= 0; i--) {
+    const idx = todayIdx - i;
+    const dot = document.createElement('div');
+    dot.className = 'streak-dot';
+    if (idx >= 0 && idx <= todayIdx) {
+      const k = idx.toString();
+      const entry = data[k];
+      if (entry && allDone(entry)) dot.classList.add('done');
+    }
+    dots.appendChild(dot);
+  }
+
+  // Tasks
+  ['treino1','treino2','dieta','leitura','foto'].forEach(t => {
+    const card = document.getElementById('t-'+t);
+    const check = document.getElementById('check-'+t);
+    if (d[t]) { card.classList.add('done'); check.style.background = 'var(--accent)'; check.style.borderColor = 'var(--accent)'; check.style.color = '#0a0a0f'; }
+    else { card.classList.remove('done'); check.style.background = ''; check.style.borderColor = ''; check.style.color = ''; }
+  });
+
+  // Water
+  renderWater(d.water || 0);
+
+  // Completion
+  updateCompletion();
+}
+
+function allDone(entry) {
+  return entry && entry.treino1 && entry.treino2 && entry.dieta && entry.leitura && entry.foto && (entry.water >= 14);
+}
+
+function renderWater(cups) {
+  const container = document.getElementById('waterCups');
+  container.innerHTML = '';
+  for (let i = 0; i < 14; i++) {
+    const c = document.createElement('div');
+    c.className = 'cup' + (i < cups ? ' filled' : '');
+    c.innerHTML = `<div class="fill"></div><span class="cup-emoji">💧</span>`;
+    c.onclick = () => toggleWater(i);
+    container.appendChild(c);
+  }
+  document.getElementById('waterLabel').textContent = `${cups} / 14 copos (250ml) = ${(cups * 0.25).toFixed(2)}L`;
+}
+
+function toggleWater(i) {
+  if (!data[todayKey]) data[todayKey] = {};
+  const current = data[todayKey].water || 0;
+  data[todayKey].water = (i < current) ? i : i + 1;
+  saveData(data);
+  renderWater(data[todayKey].water);
+  updateCompletion();
+}
+
+function toggleTask(name) {
+  if (!data[todayKey]) data[todayKey] = {};
+  data[todayKey][name] = !data[todayKey][name];
+  saveData(data);
+  renderToday();
+}
+
+function updateCompletion() {
+  const d = data[todayKey] || {};
+  const tasks = ['treino1','treino2','dieta','leitura','foto'];
+  const doneTasks = tasks.filter(t => d[t]).length;
+  const waterDone = (d.water || 0) >= 14 ? 1 : 0;
+  const total = 6; // 5 tasks + water
+  const done = doneTasks + waterDone;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('completionPct').textContent = pct + '%';
+  document.getElementById('completionTxt').textContent = `${done} de ${total} tarefas`;
+  document.getElementById('completionBar').style.width = pct + '%';
+}
+
+function saveDay() {
+  const d = data[todayKey] || {};
+  const done = allDone(d);
+  if (done) {
+    showToast('🔥 Dia completo! Incrível, Nathy!');
+  } else {
+    showToast('💾 Progresso salvo!');
+  }
+}
+
+// ——— CALENDAR ———
+function renderCalendar() {
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  // Day headers
+  ['D','S','T','Q','Q','S','S'].forEach(d => {
+    const h = document.createElement('div');
+    h.className = 'cal-header';
+    h.textContent = d;
+    grid.appendChild(h);
+  });
+
+  // Empty cells before start
+  const startDow = START_LOCAL.getDay(); // 1 = monday
+  for (let i = 0; i < startDow; i++) {
+    grid.appendChild(document.createElement('div'));
+  }
+
+  // 75 days
+  let completedDays = 0, currentStreak = 0, streakRunning = true;
+  for (let i = 0; i < 75; i++) {
+    const d = document.createElement('div');
+    d.className = 'cal-day';
+    
+    const dayDate = new Date(START_LOCAL);
+    dayDate.setDate(START_LOCAL.getDate() + i);
+    const isFuture = dayDate > today;
+    const isToday = dayDate.getTime() === today.getTime();
+
+    const num = document.createElement('div');
+    num.className = 'cal-num';
+    num.textContent = i + 1;
+    d.appendChild(num);
+
+    const entry = data[i.toString()];
+    const done = allDone(entry);
+
+    if (isToday) d.classList.add('today');
+
+    if (!isFuture && i <= todayIdx) {
+      if (done) {
+        d.classList.add('completed');
+        completedDays++;
+        if (streakRunning) currentStreak++;
+        const dot = document.createElement('div');
+        dot.className = 'cal-dot';
+        d.appendChild(dot);
+      } else if (entry && (entry.treino1 || entry.treino2 || entry.dieta || entry.leitura)) {
+        d.classList.add('partial');
+        if (i < todayIdx) streakRunning = false;
+        const dot = document.createElement('div');
+        dot.className = 'cal-dot cal-partial-dot';
+        d.appendChild(dot);
+      } else if (i < todayIdx) {
+        d.classList.add('failed');
+        streakRunning = false;
+      }
+    } else if (isFuture) {
+      d.classList.add('future');
+    }
+
+    grid.appendChild(d);
+  }
+
+  // Stats
+  const remaining = Math.max(0, 75 - completedDays);
+  const pct = Math.round((completedDays / 75) * 100);
+  document.getElementById('stat-days').textContent = completedDays;
+  document.getElementById('stat-remain').textContent = remaining;
+  document.getElementById('stat-streak').textContent = currentStreak;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('overallBar').style.width = pct + '%';
+}
+
+// ——— INIT ———
+renderToday();
+</script>
+</body>
+</html>

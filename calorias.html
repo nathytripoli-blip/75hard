@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calorias — Nathy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f7f4ef;
+    --surface: #ffffff;
+    --card: #ffffff;
+    --border: #e8e3dc;
+    --accent: #e05c2a;
+    --accent2: #2a7ae0;
+    --text: #1a1710;
+    --muted: #9a9488;
+    --soft: #f0ebe3;
+
+    --green: #b07a8a;
+    --warn: #e0972a;
+    --meta: #c9c3b8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 28px 24px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .logo {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .logo-eye {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+
+  .logo-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .day-total {
+    text-align: right;
+  }
+
+  .day-kcal {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .day-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* MACRO BAR */
+  .macro-strip {
+    background: var(--surface);
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 0;
+  }
+
+  .macro-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 16px;
+    border-right: 1px solid var(--border);
+    margin-right: 16px;
+  }
+
+  .macro-item:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+
+  .macro-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .macro-lbl {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .macro-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+
+  .macro-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .fill-p { background: var(--accent); }
+  .fill-c { background: var(--accent2); }
+  .fill-g { background: var(--warn); }
+
+  /* MAIN */
+  main { padding: 20px 24px; max-width: 600px; margin: 0 auto; }
+
+  /* UPLOAD ZONE */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 36px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: #fef8f5; }
+
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0;
+    opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+
+  .upload-icon { font-size: 36px; margin-bottom: 10px; }
+
+  .upload-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .upload-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* PREVIEW */
+  .preview-wrap {
+    display: none;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .preview-wrap.show { display: block; }
+
+  .preview-img {
+    width: 100%;
+    max-height: 280px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+  }
+
+  .preview-clear {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ANALYZE BTN */
+  .analyze-btn {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-bottom: 20px;
+    display: none;
+  }
+
+  .analyze-btn.show { display: block; }
+  .analyze-btn:hover { opacity: 0.9; }
+  .analyze-btn:active { transform: scale(0.99); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* LOADING */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 32px 0;
+    margin-bottom: 20px;
+  }
+
+  .loading.show { display: block; }
+
+  .loading-spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 12px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* RESULT CARD */
+  .result-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .result-card.show { display: block; }
+
+  .result-header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-dish {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .result-confidence {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    background: var(--soft);
+    padding: 3px 8px;
+    border-radius: 20px;
+  }
+
+  .kcal-hero {
+    padding: 24px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kcal-big {
+    font-family: 'DM Mono', monospace;
+    font-size: 52px;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .kcal-unit {
+    font-size: 18px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .macros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .macro-cell {
+    padding: 16px 20px;
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .macro-cell:last-child { border-right: none; }
+
+  .macro-big {
+    font-family: 'DM Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .macro-tag {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .ingredients-list {
+    padding: 16px 20px;
+  }
+
+  .ingredients-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 12px;
+  }
+
+  .ingredient-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .ingredient-row:last-child { border-bottom: none; }
+
+  .ingredient-name { color: var(--text); }
+  .ingredient-kcal {
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .obs-box {
+    padding: 14px 20px;
+    background: #fffbf5;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* ADD BUTTON */
+  .add-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    display: none;
+    margin-bottom: 28px;
+  }
+
+  .add-btn.show { display: block; }
+  .add-btn:hover { opacity: 0.9; }
+
+  /* LOG */
+  .log-section { margin-top: 4px; }
+
+  .log-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 14px;
+  }
+
+  .log-empty {
+    text-align: center;
+    padding: 32px 0;
+    color: var(--muted);
+    font-size: 13px;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+  }
+
+  .log-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .log-item-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+
+  .log-thumb {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .log-thumb-placeholder {
+    width: 44px; height: 44px;
+    border-radius: 8px;
+    background: var(--soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .log-dish {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .log-time {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .log-kcal {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .log-delete {
+    background: none;
+    border: none;
+    color: var(--meta);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+
+  .log-delete:hover { color: var(--accent); }
+
+  /* TARGET BAR */
+  .target-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+
+  .target-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .target-label { font-size: 13px; font-weight: 500; }
+
+  .target-nums {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .target-track {
+    height: 8px;
+    background: var(--soft);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .target-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.5s ease;
+    max-width: 100%;
+  }
+
+  .target-fill.over { background: #e02a2a; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-eye">Analisador</span>
+    <span class="logo-title">O que comi</span>
+  </div>
+  <div class="day-total">
+    <div class="day-kcal" id="totalKcal">0</div>
+    <div class="day-label">kcal hoje</div>
+  </div>
+</header>
+
+<div class="macro-strip">
+  <div class="macro-item">
+    <div class="macro-val" id="totalProt" style="color:var(--accent)">0g</div>
+    <div class="macro-lbl">Proteína</div>
+    <div class="macro-bar"><div class="macro-fill fill-p" id="barProt" style="width:0%"></div></div>
+  </div>
+  <div class="macro-item">
+    <div class="macro-val" id="totalCarb" style="color:var(--accent2)">0g</div>
+    <div class="macro-lbl">Carbo</div>
+    <div class="macro-bar"><div class="macro-fill fill-c" id="barCarb" style="width:0%"></div></div>
+  </div>
+  <div class="macro-item">
+    <div class="macro-val" id="totalGord" style="color:var(--warn)">0g</div>
+    <div class="macro-lbl">Gordura</div>
+    <div class="macro-bar"><div class="macro-fill fill-g" id="barGord" style="width:0%"></div></div>
+  </div>
+</div>
+
+<main>
+
+  <!-- TARGET -->
+  <div class="target-section">
+    <div class="target-row">
+      <span class="target-label">Meta diária</span>
+      <span class="target-nums"><span id="usedKcal">0</span> / 1500 kcal</span>
+    </div>
+    <div class="target-track">
+      <div class="target-fill" id="targetFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" accept="image/*" capture="environment" id="fileInput" onchange="handleFile(event)">
+    <div class="upload-icon">📷</div>
+    <div class="upload-title">Tira uma foto da sua refeição</div>
+    <div class="upload-sub">ou arraste uma imagem aqui</div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-wrap" id="previewWrap">
+    <img id="previewImg" class="preview-img" src="" alt="Preview">
+    <button class="preview-clear" onclick="clearImage()">✕</button>
+  </div>
+
+  <!-- ANALYZE -->
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
+    🔍 Analisar calorias
+  </button>
+
+  <!-- LOADING -->
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Identificando ingredientes e calculando...</div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <div class="result-dish" id="resultDish">—</div>
+      <div class="result-confidence" id="resultConf">—</div>
+    </div>
+    <div class="kcal-hero">
+      <div class="kcal-big" id="resultKcal">0</div>
+      <div class="kcal-unit">kcal</div>
+    </div>
+    <div class="macros-grid">
+      <div class="macro-cell">
+        <div class="macro-big" style="color:var(--accent)" id="resultProt">0g</div>
+        <div class="macro-tag">Proteína</div>
+      </div>
+      <div class="macro-cell">
+        <div class="macro-big" style="color:var(--accent2)" id="resultCarb">0g</div>
+        <div class="macro-tag">Carbo</div>
+      </div>
+      <div class="macro-cell">
+        <div class="macro-big" style="color:var(--warn)" id="resultGord">0g</div>
+        <div class="macro-tag">Gordura</div>
+      </div>
+    </div>
+    <div class="ingredients-list">
+      <div class="ingredients-title">Ingredientes estimados</div>
+      <div id="ingredientsList"></div>
+    </div>
+    <div class="obs-box" id="obsBox"></div>
+  </div>
+
+  <!-- ADD TO LOG -->
+  <button class="add-btn" id="addBtn" onclick="addToLog()">
+    ✓ Adicionar ao diário de hoje
+  </button>
+
+  <!-- LOG -->
+  <div class="log-section">
+    <div class="log-title">Diário de hoje</div>
+    <div id="logList"><div class="log-empty">Nenhuma refeição registrada ainda</div></div>
+  </div>
+
+</main>
+
+<script>
+const TARGET_KCAL = 1500;
+const TARGET_PROT = 130;
+const TARGET_CARB = 120;
+const TARGET_GORD = 50;
+
+let currentImage = null;
+let currentResult = null;
+let log = JSON.parse(localStorage.getItem('calorias_log_v1') || '[]');
+
+// Filter to today
+const todayStr = new Date().toDateString();
+log = log.filter(e => e.date === todayStr);
+
+function saveLog() {
+  localStorage.setItem('calorias_log_v1', JSON.stringify(log));
+}
+
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentImage = ev.target.result;
+    document.getElementById('previewImg').src = currentImage;
+    document.getElementById('previewWrap').classList.add('show');
+    document.getElementById('uploadZone').style.display = 'none';
+    document.getElementById('analyzeBtn').classList.add('show');
+    document.getElementById('resultCard').classList.remove('show');
+    document.getElementById('addBtn').classList.remove('show');
+    currentResult = null;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Drag and drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const fakeEvt = { target: { files: [file] } };
+    handleFile(fakeEvt);
+  }
+});
+
+function clearImage() {
+  currentImage = null;
+  currentResult = null;
+  document.getElementById('previewWrap').classList.remove('show');
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('analyzeBtn').classList.remove('show');
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('addBtn').classList.remove('show');
+  document.getElementById('fileInput').value = '';
+}
+
+async function analyzeImage() {
+  if (!currentImage) return;
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('addBtn').classList.remove('show');
+
+  try {
+    const base64 = currentImage.split(',')[1];
+    const mimeMatch = currentImage.match(/data:([^;]+);/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mimeType, data: base64 }
+            },
+            {
+              type: 'text',
+              text: `Analise esta foto de uma refeição e retorne SOMENTE um objeto JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura:
+{
+  "prato": "nome do prato em português",
+  "confianca": "Alta" | "Média" | "Baixa",
+  "kcal_total": número inteiro,
+  "proteina_g": número inteiro,
+  "carboidrato_g": número inteiro,
+  "gordura_g": número inteiro,
+  "ingredientes": [
+    { "nome": "ingrediente", "quantidade": "ex: 150g", "kcal": número }
+  ],
+  "observacao": "nota breve sobre a estimativa (ex: porção estimada, variações possíveis)"
+}
+Seja preciso mas realista. Se não conseguir identificar claramente, use confianca "Baixa" e estime com base no que é visível.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+    currentResult = result;
+    showResult(result);
+  } catch (err) {
+    document.getElementById('loading').classList.remove('show');
+    document.getElementById('analyzeBtn').disabled = false;
+    alert('Erro ao analisar a imagem. Tente novamente.');
+    console.error(err);
+  }
+}
+
+function showResult(r) {
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('analyzeBtn').disabled = false;
+
+  document.getElementById('resultDish').textContent = r.prato;
+  document.getElementById('resultConf').textContent = `Confiança: ${r.confianca}`;
+  document.getElementById('resultKcal').textContent = r.kcal_total;
+  document.getElementById('resultProt').textContent = r.proteina_g + 'g';
+  document.getElementById('resultCarb').textContent = r.carboidrato_g + 'g';
+  document.getElementById('resultGord').textContent = r.gordura_g + 'g';
+  document.getElementById('obsBox').textContent = r.observacao || '';
+
+  const list = document.getElementById('ingredientsList');
+  list.innerHTML = '';
+  (r.ingredientes || []).forEach(ing => {
+    const row = document.createElement('div');
+    row.className = 'ingredient-row';
+    row.innerHTML = `<span class="ingredient-name">${ing.nome} <span style="color:var(--muted);font-size:11px;">${ing.quantidade}</span></span><span class="ingredient-kcal">${ing.kcal} kcal</span>`;
+    list.appendChild(row);
+  });
+
+  document.getElementById('resultCard').classList.add('show');
+  document.getElementById('addBtn').classList.add('show');
+}
+
+function addToLog() {
+  if (!currentResult) return;
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  log.push({
+    date: now.toDateString(),
+    time: timeStr,
+    prato: currentResult.prato,
+    kcal: currentResult.kcal_total,
+    prot: currentResult.proteina_g,
+    carb: currentResult.carboidrato_g,
+    gord: currentResult.gordura_g,
+    img: currentImage
+  });
+
+  saveLog();
+  renderLog();
+  updateTotals();
+  clearImage();
+}
+
+function deleteEntry(idx) {
+  log.splice(idx, 1);
+  saveLog();
+  renderLog();
+  updateTotals();
+}
+
+function renderLog() {
+  const container = document.getElementById('logList');
+  if (log.length === 0) {
+    container.innerHTML = '<div class="log-empty">Nenhuma refeição registrada ainda</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  log.forEach((entry, i) => {
+    const item = document.createElement('div');
+    item.className = 'log-item';
+
+    const thumb = entry.img
+      ? `<img class="log-thumb" src="${entry.img}" alt="">`
+      : `<div class="log-thumb-placeholder">🍽️</div>`;
+
+    item.innerHTML = `
+      <div class="log-item-left">
+        ${thumb}
+        <div>
+          <div class="log-dish">${entry.prato}</div>
+          <div class="log-time">${entry.time} · P:${entry.prot}g C:${entry.carb}g G:${entry.gord}g</div>
+        </div>
+      </div>
+      <div class="log-kcal">${entry.kcal}</div>
+      <button class="log-delete" onclick="deleteEntry(${i})">×</button>
+    `;
+    container.appendChild(item);
+  });
+}
+
+function updateTotals() {
+  const totKcal = log.reduce((s, e) => s + e.kcal, 0);
+  const totProt = log.reduce((s, e) => s + e.prot, 0);
+  const totCarb = log.reduce((s, e) => s + e.carb, 0);
+  const totGord = log.reduce((s, e) => s + e.gord, 0);
+
+  document.getElementById('totalKcal').textContent = totKcal;
+  document.getElementById('usedKcal').textContent = totKcal;
+  document.getElementById('totalProt').textContent = totProt + 'g';
+  document.getElementById('totalCarb').textContent = totCarb + 'g';
+  document.getElementById('totalGord').textContent = totGord + 'g';
+
+  const pctKcal = Math.min((totKcal / TARGET_KCAL) * 100, 100);
+  const pctP = Math.min((totProt / TARGET_PROT) * 100, 100);
+  const pctC = Math.min((totCarb / TARGET_CARB) * 100, 100);
+  const pctG = Math.min((totGord / TARGET_GORD) * 100, 100);
+
+  const fill = document.getElementById('targetFill');
+  fill.style.width = pctKcal + '%';
+  fill.className = 'target-fill' + (totKcal > TARGET_KCAL ? ' over' : '');
+
+  document.getElementById('barProt').style.width = pctP + '%';
+  document.getElementById('barCarb').style.width = pctC + '%';
+  document.getElementById('barGord').style.width = pctG + '%';
+}
+
+// Init
+renderLog();
+updateTotals();
+</script>
+</body>
+</html>
